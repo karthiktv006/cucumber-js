@@ -29,21 +29,24 @@ describe("Cucumber.Cli.Configuration", function () {
   });
 
   describe("getFormatter()", function () {
-    var shouldSnippetsBeInCoffeeScript, formatterOptions, shouldSnippetsBeShown, shouldShowSource;
+    var shouldSnippetsBeInCoffeeScript, formatterOptions, shouldSnippetsBeShown, shouldShowSource, getOutputFile;
 
     beforeEach(function () {
       shouldSnippetsBeInCoffeeScript = createSpy("should snippets be in CS?");
       shouldSnippetsBeShown = createSpy("should snippets be shown?");
       shouldShowSource               = createSpy("should source uris be visible?");
-      formatterOptions               = {coffeeScriptSnippets: shouldSnippetsBeInCoffeeScript, snippets: shouldSnippetsBeShown, showSource: shouldShowSource};
+      getOutputFile                      = createSpy("logToFile");
+      formatterOptions               = {coffeeScriptSnippets: shouldSnippetsBeInCoffeeScript, snippets: shouldSnippetsBeShown, showSource: shouldShowSource, logToFile: getOutputFile};
       spyOnStub(argumentParser, 'getFormat').andReturn("progress");
       spyOnStub(argumentParser, 'shouldSnippetsBeInCoffeeScript').andReturn(shouldSnippetsBeInCoffeeScript);
       spyOnStub(argumentParser, 'shouldSnippetsBeShown').andReturn(shouldSnippetsBeShown);
       spyOnStub(argumentParser, 'shouldShowSource').andReturn(shouldShowSource);
+      spyOnStub(argumentParser, 'getOutputFile').andReturn(getOutputFile);
       spyOn(Cucumber.Listener, 'JsonFormatter');
       spyOn(Cucumber.Listener, 'ProgressFormatter');
       spyOn(Cucumber.Listener, 'PrettyFormatter');
       spyOn(Cucumber.Listener, 'SummaryFormatter');
+      spyOn(Cucumber.Listener, 'RerunFormatter');
     });
 
     it("gets the formatter name from the argument parser", function () {
