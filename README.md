@@ -20,7 +20,7 @@ It runs on both Node.js and *modern* web browsers.
 
 Cucumber.js is tested on:
 
-* Node.js 0.8, 0.10, 0.11, 0.12 and io.js (see [CI builds](https://travis-ci.org/cucumber/cucumber-js))
+* Node.js 4.x, 0.12, 0.10, 0.8 and io.js (see [CI builds](https://travis-ci.org/cucumber/cucumber-js))
 * Google Chrome
 * Firefox
 * Safari
@@ -74,7 +74,7 @@ Feature: Example feature
 
 ### Support Files
 
-Support files let you setup the environment in which steps will be run, and define step definitions. Both JavaScript (`.js`) and CoffeeScript (`.coffee`) source files are supported.
+Support files let you setup the environment in which steps will be run, and define step definitions.
 
 #### World
 
@@ -84,14 +84,13 @@ Support files let you setup the environment in which steps will be run, and defi
 // features/support/world.js
 var zombie = require('zombie');
 function World(callback) {
-    this.browser = new zombie(); // this.browser will be available in step definitions
+  this.browser = new zombie(); // this.browser will be available in step definitions
 
-    this.visit = function (url, callback) {
-      this.browser.visit(url, callback);
-    };
-
-    callback(); // tell Cucumber we're finished and to use 'this' as the world instance
+  this.visit = function (url, callback) {
+    this.browser.visit(url, callback);
   };
+
+  callback(); // tell Cucumber we're finished and to use 'this' as the world instance
 }
 module.exports.World = World;
 ```
@@ -114,7 +113,7 @@ function WorldFactory(callback) {
   };
 
   callback(world); // tell Cucumber we're finished and to use our world object instead of 'this'
-};
+}
 exports.World = WorldFactory;
 ```
 
@@ -455,6 +454,34 @@ this.After(function (scenario, callback) {
   }
 });
 ```
+
+### Transpilers
+
+Step definitions and support files can be written in other languages that transpile to javascript. This done with the CLI option `--compiler <file_extension>:<module_name>`.
+
+#### CoffeeScript
+
+Install the [coffee-script](https://www.npmjs.com/package/coffee-script) NPM package and invoke Cucumber with `--compiler coffee:coffee-script/register`.
+
+#### TypeScript
+
+Install the [typescript-node](https://www.npmjs.com/package/typescript-node) NPM package and invoke Cucumber with `--compiler ts:typescript-node/register`.
+
+As usual, all your step definition and support files must export a function to be run by Cucumber. This is how it is done in TS:
+
+
+```typescript
+declare var module: any;
+module.exports = function () {
+  this.Given(/.*/, function () {
+    // ...
+  })
+}
+```
+
+#### PogoScript
+
+Install the [pogo](https://www.npmjs.com/package/pogo) NPM package and invoke Cucumber with `--compiler pogo:pogo`.
 
 ### Run cucumber
 

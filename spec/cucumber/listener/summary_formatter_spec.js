@@ -274,13 +274,16 @@ describe("Cucumber.Listener.SummaryFormatter", function () {
   });
 
   describe("storeFailedScenario()", function () {
-    var failedScenario, name, uri, line, string;
+    var path = require('path');
+
+    var failedScenario, name, relativeUri, uri, line, string;
 
     beforeEach(function () {
       name           = "some failed scenario";
-      uri            = "/path/to/some.feature";
+      relativeUri    = "path/to/some.feature";
+      uri            = path.join(process.cwd(), relativeUri);
       line           = "123";
-      string         = uri + ":" + line + " # Scenario: " + name;
+      string         = relativeUri + ":" + line + " # Scenario: " + name;
       failedScenario = createSpyWithStubs("failedScenario", {getName: name, getUri: uri, getLine: line});
       spyOn(summaryFormatter, 'appendStringToFailedScenarioLogBuffer');
     });
@@ -544,7 +547,7 @@ describe("Cucumber.Listener.SummaryFormatter", function () {
   });
 
   describe("logScenariosSummary()", function () {
-    var scenarioCount, passedScenarioCount, undefinedScenarioCount, pendingScenarioCount, failedScenarioCount;
+    var scenarioCount, passedScenarioCount, undefinedScenarioCount, pendingScenarioCount, failedScenarioCount, skippedScenarioCount;
 
     beforeEach(function () {
       scenarioCount          = 12;
@@ -552,11 +555,13 @@ describe("Cucumber.Listener.SummaryFormatter", function () {
       undefinedScenarioCount = 17;
       pendingScenarioCount   = 7;
       failedScenarioCount    = 15;
+      skippedScenarioCount   = 10;
       spyOnStub(statsJournal, 'getScenarioCount').andReturn(scenarioCount);
       spyOnStub(statsJournal, 'getPassedScenarioCount').andReturn(passedScenarioCount);
       spyOnStub(statsJournal, 'getUndefinedScenarioCount').andReturn(undefinedScenarioCount);
       spyOnStub(statsJournal, 'getPendingScenarioCount').andReturn(pendingScenarioCount);
       spyOnStub(statsJournal, 'getFailedScenarioCount').andReturn(failedScenarioCount);
+      spyOnStub(statsJournal, 'getSkippedScenarioCount').andReturn(skippedScenarioCount);
     });
 
     it("gets the number of scenarios", function () {
@@ -998,7 +1003,7 @@ describe("Cucumber.Listener.SummaryFormatter", function () {
 
     it("logs a little explanation about the snippets", function () {
       summaryFormatter.logUndefinedStepSnippets();
-      var expectedString = Cucumber.Util.ConsoleColor.format('pending', "\nYou can implement step definitions for undefined steps with these snippets:\n\n");
+      var expectedString = Cucumber.Util.Colors.pending("\nYou can implement step definitions for undefined steps with these snippets:\n\n");
       expect(summaryFormatter.log).toHaveBeenCalledWith(expectedString);
     });
 
@@ -1009,7 +1014,7 @@ describe("Cucumber.Listener.SummaryFormatter", function () {
 
     it("logs the undefined steps", function () {
       summaryFormatter.logUndefinedStepSnippets();
-      var expectedString = Cucumber.Util.ConsoleColor.format('pending', undefinedStepLogBuffer);
+      var expectedString = Cucumber.Util.Colors.pending(undefinedStepLogBuffer);
       expect(summaryFormatter.log).toHaveBeenCalledWith(expectedString);
     });
   });
