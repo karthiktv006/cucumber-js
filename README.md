@@ -20,7 +20,7 @@ It runs on both Node.js and *modern* web browsers.
 
 Cucumber.js is tested on:
 
-* Node.js 4.x, 0.12, 0.10, 0.8 and io.js (see [CI builds](https://travis-ci.org/cucumber/cucumber-js))
+* Node.js 4.x, 0.12, 0.10, and io.js (see [CI builds](https://travis-ci.org/cucumber/cucumber-js))
 * Google Chrome
 * Firefox
 * Safari
@@ -38,20 +38,11 @@ Install globally with:
 $ npm install -g cucumber
 ```
 
-OR
+Install as a development dependency of your application with:
 
-You may also define cucumber.js as a development dependency of your application by including it in a package.json file.
-
-``` json
-// package.json
-
-{ "devDependencies" : {
-    "cucumber": "latest"
-  }
-}
+``` shell
+$ npm install --save-dev cucumber
 ```
-
-Then install with `npm install --dev`
 
 
 ### Features
@@ -92,7 +83,10 @@ function World(callback) {
 
   callback(); // tell Cucumber we're finished and to use 'this' as the world instance
 }
-module.exports.World = World;
+
+module.exports = function() {
+  this.World = World;
+};
 ```
 
 It is possible to tell Cucumber to use another object instance than the constructor:
@@ -114,7 +108,10 @@ function WorldFactory(callback) {
 
   callback(world); // tell Cucumber we're finished and to use our world object instead of 'this'
 }
-exports.World = WorldFactory;
+
+module.exports = function() {
+  this.World = World;
+};
 ```
 
 #### Step Definitions
@@ -133,11 +130,9 @@ Step definitions are run when steps match their name. `this` is an instance of `
 // features/step_definitions/myStepDefinitions.js
 
 module.exports = function () {
-  this.World = require("../support/world.js").World; // overwrite default World constructor
-
   this.Given(/^I am on the Cucumber.js GitHub repository$/, function (callback) {
     // Express the regexp above with the code you wish you had.
-    // `this` is set to a new this.World instance.
+    // `this` is set to a World instance.
     // i.e. you may use this.browser to execute the step:
 
     this.visit('https://github.com/cucumber/cucumber-js', callback);
@@ -160,7 +155,7 @@ module.exports = function () {
     if (title === pageTitle) {
       callback();
     } else {
-      callback.fail(new Error("Expected to be on page with title " + title));
+      callback(new Error("Expected to be on page with title " + title));
     }
   });
 };
@@ -206,16 +201,49 @@ this.Then('I should see "$title" as the page title', function (title, callback) 
   if (title === pageTitle) {
     callback();
   } else {
-    callback.fail(new Error("Expected to be on page with title " + title));
+    callback(new Error("Expected to be on page with title " + title));
   }
 });
 ```
 
 `'I have $count "$string"'` would translate to `/^I have (.*) "([^"]*)"$/`.
 
+##### Timeouts
+
+By default, asynchronous hooks and steps timeout after 5000 milliseconds.
+This can be modified globally with:
+
+```js
+// features/support/env.js
+
+var configure = function () {
+  this.setDefaultTimeout(60 * 1000);
+};
+
+module.exports = configure;
+```
+
+A specific step's timeout can be set with:
+
+```js
+// features/step_definitions/my_steps.js
+
+var mySteps = function () {
+  this.Given(/^a slow step$/, {timeout: 60 * 1000}, function(callback) {
+    // Does some slow browser/filesystem/network actions
+  });
+};
+
+module.exports = mySteps;
+```
+
 #### Hooks
 
 Hooks can be used to prepare and clean the environment before and after each scenario is executed.
+Hooks can use callbacks, return promises, or be synchronous.
+The first argument to hooks is always the current scenario. See
+[Cucumber.Api.Scenario](https://github.com/cucumber/cucumber-js/blob/master/lib/cucumber/api/scenario.js)
+for more information.
 
 ##### Before hooks
 
@@ -225,7 +253,7 @@ To run something before every scenario, use before hooks:
 // features/support/hooks.js (this path is just a suggestion)
 
 var myHooks = function () {
-  this.Before(function (callback) {
+  this.Before(function (scenario, callback) {
     // Just like inside step definitions, "this" is set to a World instance.
     // It's actually the same instance the current scenario step definitions
     // will receive.
@@ -253,7 +281,7 @@ The *before hook* counterpart is the *after hook*. It's similar in shape but is 
 // features/support/after_hooks.js
 
 var myAfterHooks = function () {
-  this.After(function (callback) {
+  this.After(function (scenario, callback) {
     // Again, "this" is set to the World instance the scenario just finished
     // playing with.
 
@@ -270,38 +298,6 @@ var myAfterHooks = function () {
 module.exports = myAfterHooks;
 ```
 
-##### After features event
-
-The *after features event* is emitted once all features have been executed, just before the process exits. It can be used for tasks such as closing your browser after running automated browser tests with [selenium](https://code.google.com/p/selenium/wiki/WebDriverJs) or [phantomjs](http://phantomjs.org/).
-
-note: There are "Before" and "After" events for each of the following: "Features", "Feature", "Scenario", "Step" as well as the standalone events "Background" and "StepResult". e.g. "BeforeScenario".
-
-```javascript
-// features/support/world.js
-var webdriver = require("selenium-webdriver");
-
-var World = function World(callback) {
-  this.driver = new webdriver.Builder()
-    .withCapabilities(webdriver.Capabilities.chrome())
-    .build();
-  callback();
-}
-
-module.exports = World;
-
-// features/support/after_hooks.js
-var myAfterHooks = function () {
-  this.registerHandler('AfterFeatures', function (event, callback) {
-    // clean up!
-    // Be careful, there is no World instance available on `this` here
-    // because all scenarios are done and World instances are long gone.
-    callback();
-  });
-}
-
-module.exports = myAfterHooks;
-```
-
 ##### Around hooks
 
 It's also possible to combine both before and after hooks in one single definition with the help of *around hooks*:
@@ -310,7 +306,7 @@ It's also possible to combine both before and after hooks in one single definiti
 // features/support/advanced_hooks.js
 
 myAroundHooks = function () {
-  this.Around(function (runScenario) {
+  this.Around(function (scenario, runScenario) {
     // "this" is - as always - an instance of World promised to the scenario.
 
     // First do the "before scenario" tasks:
@@ -321,7 +317,10 @@ myAroundHooks = function () {
     // When the "before" duty is finished, tell Cucumber to execute the scenario
     // and pass a function to be called when the scenario is finished:
 
-    runScenario(function (callback) {
+    // The first argument to runScenario is the error, if any, of the before tasks
+    // The second argument is a function which performs the after tasks
+    //   it can use callbacks, return a promise or be synchronous
+    runScenario(null, function (callback) {
       // Now, we can do our "after scenario" stuff:
 
       this.emptyDatabase();
@@ -344,7 +343,7 @@ Hooks can be conditionally elected for execution based on the tags of the scenar
 // features/support/hooks.js (this path is just a suggestion)
 
 var myHooks = function () {
-  this.Before("@foo", "@bar,@baz", function (callback) {
+  this.Before("@foo", "@bar,@baz", function (scenario, callback) {
     // This hook will be executed before scenarios tagged with @foo and either
     // @bar or @baz.
 
@@ -356,35 +355,6 @@ var myHooks = function () {
 
 module.exports = myHooks;
 ```
-
-##### Context data
-
-You can access the scenario currently being run by adding a parameter
-to your function:
-
-``` javascript
-this.Before(function (scenario, callback) {
-  console.log(scenario.getName(), "(" + scenario.getUri() + ":" + scenario.getLine() + ")");
-  callback();
-});
-```
-
-The scenario object can also be used with around hooks:
-
-``` javascript
-this.Around(function (scenario, runScenario) {
-  console.log(scenario.getName(), "(" + scenario.getUri() + ":" + scenario.getLine() + ")");
-
-  runScenario(function(callback) {
-    console.log(scenario.getName(), "(" + scenario.getUri() + ":" + scenario.getLine() + ")");
-    callback();
-  });
-});
-```
-
-See
-[Cucumber.Api.Scenario](https://github.com/cucumber/cucumber-js/blob/master/lib/cucumber/api/scenario.js)
-for more information about the `scenario` object.
 
 ##### Attachments
 
@@ -455,6 +425,26 @@ this.After(function (scenario, callback) {
 });
 ```
 
+##### After features event
+
+The *after features event* is emitted once all features have been executed, just before the process exits. It can be used for tasks such as closing your browser after running automated browser tests with [selenium](https://code.google.com/p/selenium/wiki/WebDriverJs) or [phantomjs](http://phantomjs.org/).
+
+note: There are "Before" and "After" events for each of the following: "Features", "Feature", "Scenario", "Step" as well as the standalone events "Background" and "StepResult". e.g. "BeforeScenario".
+
+```javascript
+// features/support/after_hooks.js
+var myAfterHooks = function () {
+  this.registerHandler('AfterFeatures', function (event, callback) {
+    // clean up!
+    // Be careful, there is no World instance available on `this` here
+    // because all scenarios are done and World instances are long gone.
+    callback();
+  });
+}
+
+module.exports = myAfterHooks;
+```
+
 ### Transpilers
 
 Step definitions and support files can be written in other languages that transpile to javascript. This done with the CLI option `--compiler <file_extension>:<module_name>`.
@@ -505,7 +495,7 @@ And require specific step definitions and support code files with the --require 
 $ cucumber.js features/my_feature.feature --require features/step_definitions/my_step_definitions.js
 ```
 
-If you installed Cucumber locally or with `npm install --dev`, you'll need to specify the path to the binary:
+If you installed Cucumber locally or with `npm install --save-dev`, you'll need to specify the path to the binary:
 
 ``` shell
 $ ./node_modules/.bin/cucumber.js

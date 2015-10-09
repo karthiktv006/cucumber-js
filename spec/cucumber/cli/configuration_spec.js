@@ -11,7 +11,7 @@ describe("Cucumber.Cli.Configuration", function () {
   beforeEach(function () {
     argv                = createSpy("arguments (argv)");
     argumentParser      = createSpyWithStubs("argument parser", {parse: null});
-    spyOn(Cucumber.Cli, 'ArgumentParser').andReturn(argumentParser);
+    spyOn(Cucumber.Cli, 'ArgumentParser').and.returnValue(argumentParser);
     configuration       = Cucumber.Cli.Configuration(argv);
     context.configuration = configuration;
   });
@@ -33,15 +33,15 @@ describe("Cucumber.Cli.Configuration", function () {
 
     beforeEach(function () {
       shouldSnippetsBeInCoffeeScript = createSpy("should snippets be in CS?");
-      shouldSnippetsBeShown = createSpy("should snippets be shown?");
+      shouldSnippetsBeShown          = createSpy("should snippets be shown?");
       shouldShowSource               = createSpy("should source uris be visible?");
-      getOutputFile                      = createSpy("logToFile");
+      getOutputFile                  = createSpy("logToFile");
       formatterOptions               = {coffeeScriptSnippets: shouldSnippetsBeInCoffeeScript, snippets: shouldSnippetsBeShown, showSource: shouldShowSource, logToFile: getOutputFile};
-      spyOnStub(argumentParser, 'getFormat').andReturn("progress");
-      spyOnStub(argumentParser, 'shouldSnippetsBeInCoffeeScript').andReturn(shouldSnippetsBeInCoffeeScript);
-      spyOnStub(argumentParser, 'shouldSnippetsBeShown').andReturn(shouldSnippetsBeShown);
-      spyOnStub(argumentParser, 'shouldShowSource').andReturn(shouldShowSource);
-      spyOnStub(argumentParser, 'getOutputFile').andReturn(getOutputFile);
+      spyOnStub(argumentParser, 'getFormat').and.returnValue("progress");
+      spyOnStub(argumentParser, 'shouldSnippetsBeInCoffeeScript').and.returnValue(shouldSnippetsBeInCoffeeScript);
+      spyOnStub(argumentParser, 'shouldSnippetsBeShown').and.returnValue(shouldSnippetsBeShown);
+      spyOnStub(argumentParser, 'shouldShowSource').and.returnValue(shouldShowSource);
+      spyOnStub(argumentParser, 'getOutputFile').and.returnValue(getOutputFile);
       spyOn(Cucumber.Listener, 'JsonFormatter');
       spyOn(Cucumber.Listener, 'ProgressFormatter');
       spyOn(Cucumber.Listener, 'PrettyFormatter');
@@ -66,17 +66,16 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("checks whether the step definition snippets should be shown", function () {
       configuration.getFormatter();
-      expect(argumentParser.shouldSnippetsBeShown).toHaveBeenCalled();
-      expect(argumentParser.shouldSnippetsBeShown.callCount).toBe(1);
+      expect(argumentParser.shouldSnippetsBeShown).toHaveBeenCalledTimes(1);
     });
 
     describe("when the formatter name is \"json\"", function () {
       var formatter;
 
       beforeEach(function () {
-        argumentParser.getFormat.andReturn("json");
+        argumentParser.getFormat.and.returnValue("json");
         formatter = createSpy("formatter");
-        Cucumber.Listener.JsonFormatter.andReturn(formatter);
+        Cucumber.Listener.JsonFormatter.and.returnValue(formatter);
       });
 
       it("creates a new progress formatter", function () {
@@ -93,9 +92,9 @@ describe("Cucumber.Cli.Configuration", function () {
       var formatter;
 
       beforeEach(function () {
-        argumentParser.getFormat.andReturn("progress");
+        argumentParser.getFormat.and.returnValue("progress");
         formatter = createSpy("formatter");
-        Cucumber.Listener.ProgressFormatter.andReturn(formatter);
+        Cucumber.Listener.ProgressFormatter.and.returnValue(formatter);
       });
 
       it("creates a new progress formatter", function () {
@@ -112,9 +111,9 @@ describe("Cucumber.Cli.Configuration", function () {
       var formatter;
 
       beforeEach(function () {
-        argumentParser.getFormat.andReturn("pretty");
+        argumentParser.getFormat.and.returnValue("pretty");
         formatter = createSpy("formatter");
-        Cucumber.Listener.PrettyFormatter.andReturn(formatter);
+        Cucumber.Listener.PrettyFormatter.and.returnValue(formatter);
       });
 
       it("creates a new pretty formatter", function () {
@@ -131,9 +130,9 @@ describe("Cucumber.Cli.Configuration", function () {
       var formatter;
 
       beforeEach(function () {
-        argumentParser.getFormat.andReturn("summary");
+        argumentParser.getFormat.and.returnValue("summary");
         formatter = createSpy("formatter");
-        Cucumber.Listener.SummaryFormatter.andReturn(formatter);
+        Cucumber.Listener.SummaryFormatter.and.returnValue(formatter);
       });
 
       it("creates a new summary formatter", function () {
@@ -148,7 +147,7 @@ describe("Cucumber.Cli.Configuration", function () {
 
     describe("when the formatter name is unknown", function () {
       beforeEach(function () {
-        argumentParser.getFormat.andReturn("blah");
+        argumentParser.getFormat.and.returnValue("blah");
       });
 
       it("throws an exceptions", function () {
@@ -165,9 +164,9 @@ describe("Cucumber.Cli.Configuration", function () {
       featureFilePaths    = createSpy("feature file paths");
       featureSourceLoader = createSpy("feature source loader");
       featureSources      = createSpy("feature sources");
-      spyOnStub(argumentParser, 'getFeatureFilePaths').andReturn(featureFilePaths);
-      spyOnStub(featureSourceLoader, 'getSources').andReturn(featureSources);
-      spyOn(Cucumber.Cli, 'FeatureSourceLoader').andReturn(featureSourceLoader);
+      spyOnStub(argumentParser, 'getFeatureFilePaths').and.returnValue(featureFilePaths);
+      spyOnStub(featureSourceLoader, 'getSources').and.returnValue(featureSources);
+      spyOn(Cucumber.Cli, 'FeatureSourceLoader').and.returnValue(featureSourceLoader);
     });
 
     it("gets the feature file paths", function () {
@@ -197,9 +196,9 @@ describe("Cucumber.Cli.Configuration", function () {
       astFilter      = createSpyWithStubs("AST filter");
       tagFilterRules = [];
       scenarioByLineFilterRules = createSpy("line specs");
-      spyOn(Cucumber.Ast, 'Filter').andReturn(astFilter);
-      spyOn(configuration, 'getTagAstFilterRules').andReturn(tagFilterRules);
-      spyOn(configuration, 'getSingleScenarioAstFilterRule').andReturn(scenarioByLineFilterRules);
+      spyOn(Cucumber.Ast, 'Filter').and.returnValue(astFilter);
+      spyOn(configuration, 'getTagAstFilterRules').and.returnValue(tagFilterRules);
+      spyOn(configuration, 'getSingleScenarioAstFilterRule').and.returnValue(scenarioByLineFilterRules);
     });
 
     it("gets the tag filter rules", function () {
@@ -225,10 +224,10 @@ describe("Cucumber.Cli.Configuration", function () {
       supportCodeFilePaths = createSpy("support code file paths");
       supportCodeLoader    = createSpy("support code loader");
       supportCodeLibrary   = createSpy("support code library");
-      spyOnStub(argumentParser, 'getCompilerModules').andReturn(compilerModules);
-      spyOnStub(argumentParser, 'getSupportCodeFilePaths').andReturn(supportCodeFilePaths);
-      spyOn(Cucumber.Cli, 'SupportCodeLoader').andReturn(supportCodeLoader);
-      spyOnStub(supportCodeLoader, 'getSupportCodeLibrary').andReturn(supportCodeLibrary);
+      spyOnStub(argumentParser, 'getCompilerModules').and.returnValue(compilerModules);
+      spyOnStub(argumentParser, 'getSupportCodeFilePaths').and.returnValue(supportCodeFilePaths);
+      spyOn(Cucumber.Cli, 'SupportCodeLoader').and.returnValue(supportCodeLoader);
+      spyOnStub(supportCodeLoader, 'getSupportCodeLibrary').and.returnValue(supportCodeLibrary);
     });
 
     it("gets the support code file paths", function () {
@@ -257,8 +256,8 @@ describe("Cucumber.Cli.Configuration", function () {
     beforeEach(function () {
       tagGroups = [createSpy("tag group 1"), createSpy("tag group 2"), createSpy("tag group 3")];
       rules     = [createSpy("any of tags rule 1"), createSpy("any of tags rule 2"), createSpy("any of tags rule 3")];
-      spyOnStub(argumentParser, 'getTagGroups').andReturn(tagGroups);
-      spyOn(Cucumber.Ast.Filter, 'AnyOfTagsRule').andReturnSeveral(rules);
+      spyOnStub(argumentParser, 'getTagGroups').and.returnValue(tagGroups);
+      spyOn(Cucumber.Ast.Filter, 'AnyOfTagsRule').and.returnValues.apply(null, rules);
     });
 
     it("gets the tag groups from the argument parser", function () {
@@ -290,7 +289,7 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("returns the answer from the argument parser", function () {
       var isHelpRequested = createSpy("is help requested?");
-      argumentParser.isHelpRequested.andReturn(isHelpRequested);
+      argumentParser.isHelpRequested.and.returnValue(isHelpRequested);
       expect(configuration.isHelpRequested()).toBe(isHelpRequested);
     });
   });
@@ -307,7 +306,7 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("returns the answer from the argument parser", function () {
       var isVersionRequested = createSpy("is version requested?");
-      argumentParser.isVersionRequested.andReturn(isVersionRequested);
+      argumentParser.isVersionRequested.and.returnValue(isVersionRequested);
       expect(configuration.isVersionRequested()).toBe(isVersionRequested);
     });
   });
@@ -324,7 +323,7 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("returns the answer from the argument parser", function () {
       var shouldSnippetsBeInCoffeeScript = createSpy("step definitions in CS?");
-      argumentParser.shouldSnippetsBeInCoffeeScript.andReturn(shouldSnippetsBeInCoffeeScript);
+      argumentParser.shouldSnippetsBeInCoffeeScript.and.returnValue(shouldSnippetsBeInCoffeeScript);
       expect(configuration.shouldSnippetsBeInCoffeeScript()).toBe(shouldSnippetsBeInCoffeeScript);
     });
   });
@@ -336,13 +335,12 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("asks the argument parser whether the step definition snippets are shown or not", function () {
       configuration.shouldSnippetsBeShown();
-      expect(argumentParser.shouldSnippetsBeShown).toHaveBeenCalled();
-      expect(argumentParser.shouldSnippetsBeShown.callCount).toBe(1);
+      expect(argumentParser.shouldSnippetsBeShown).toHaveBeenCalledTimes(1);
     });
 
     it("returns the answer from the argument parser", function () {
       var shouldSnippetsBeShown = createSpy("show step definitions?");
-      argumentParser.shouldSnippetsBeShown.andReturn(shouldSnippetsBeShown);
+      argumentParser.shouldSnippetsBeShown.and.returnValue(shouldSnippetsBeShown);
       expect(configuration.shouldSnippetsBeShown()).toBe(shouldSnippetsBeShown);
     });
   });
@@ -359,7 +357,7 @@ describe("Cucumber.Cli.Configuration", function () {
 
     it("tells whether the stack traces are filtered or not", function () {
       var shouldStackTracesBeFiltered = createSpy("filter stack traces?");
-      argumentParser.shouldFilterStackTraces.andReturn(shouldStackTracesBeFiltered);
+      argumentParser.shouldFilterStackTraces.and.returnValue(shouldStackTracesBeFiltered);
       expect(configuration.shouldFilterStackTraces()).toBe(shouldStackTracesBeFiltered);
     });
   });
