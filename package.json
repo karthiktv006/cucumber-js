@@ -1,5 +1,5 @@
 {
-  "name": "cucumber",
+  "name": "cucumber-redbox",
   "description": "The official JavaScript implementation of Cucumber.",
   "keywords": [
     "testing",
@@ -9,7 +9,7 @@
     "tests"
   ],
   "version": "0.7.0",
-  "homepage": "http://github.com/cucumber/cucumber-js",
+  "homepage": "http://github.com/karthiktv006/cucumber-js",
   "author": "Julien Biezemans <jb@jbpros.com> (http://jbpros.net)",
   "contributors": [
     "Julien Biezemans <jb@jbpros.com> (http://jbpros.net)",
